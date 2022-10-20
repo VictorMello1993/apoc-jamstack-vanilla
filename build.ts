@@ -5,18 +5,18 @@ import appConfig from "./app.json";
 import fs from "fs/promises";
 import path from "path";
 
-// const filesFolder = "./files";
+const filesFolder = "./files";
 
-// async function processFile(sourcePath: string, destinationPath: string) {
-//   const fileStream = createWriteStream(destinationPath);
-//   console.log(fileStream);
-//   https.get(sourcePath, (request) => {
-//     request.pipe(fileStream);
-//     fileStream.on("finish", () => {
-//       fileStream.close();
-//     });
-//   });
-// }
+async function processFile(file: string, destinationPath: string) {
+  const sourcePath = path.join(filesFolder, file);
+
+  // Copiando arquivos de uma pasta para outra
+  await fs.copyFile(sourcePath, destinationPath);
+
+  // Obtendo o tamanho e data de modificação dos arquivos
+  const { size, atime } = await fs.stat(sourcePath);
+  console.log(size, atime);
+}
 
 // Montando HTML no processo de build
 (async function build() {
@@ -26,10 +26,10 @@ import path from "path";
   shell.mkdir("public");
   shell.mkdir(path.join("public", "files"));
 
-  // console.log("Getting files...");
-  // const files = await fs.readdir(filesFolder);
+  console.log("Getting files...");
+  const files = await fs.readdir(filesFolder);
 
-  // await Promise.all(files.map((file, index) => processFile(file, path.join("public", "files", `${file}`))));
+  await Promise.all(files.map((file) => processFile(file, path.join("public", "files", `${file}`))));
 
   // Interpolando o conteúdo HTML
   const htmlFile = (await fs.readFile("index.html"))
