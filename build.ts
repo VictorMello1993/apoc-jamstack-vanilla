@@ -79,7 +79,7 @@ async function copyFiles(file: string, destinationPath: string) {
 
 function getIconFileExtension(extension: string): string {
   const IconFileExtension = {
-    ".pdf": "./assets/file-pdf.svg",
+    ".pdf": "/assets/file-pdf.svg",
     ".doc": "/assets/file-doc.svg",
     ".docx": "/assets/file-doc.svg",
     ".csv": "/assets/file-csv.svg",
