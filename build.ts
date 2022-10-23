@@ -7,8 +7,6 @@ const filesFolder = "./files";
 
 async function copyFiles(file: string, destinationPath: string) {
   const sourcePath = path.join(filesFolder, file);
-
-  // Copiando arquivos de uma pasta para outra
   await fs.copyFile(sourcePath, destinationPath);
 }
 
@@ -22,32 +20,20 @@ async function copyFiles(file: string, destinationPath: string) {
 
   const files = await fs.readdir(filesFolder);
 
-  await Promise.all(files.map((file) => copyFiles(file, path.join("public", "files", `${file}`))));
+  const tableRows = await Promise.all(
+    files
+      .map(async (file, index) => {
+        copyFiles(file, path.join("public", "files", `${file}`));
 
-  const tableRows = files
-    .map(async (file, index) => {
-      const indexFileExtension = file.indexOf(".", -1);
+        const indexFileExtension = file.indexOf(".", -1);
 
-      const srcImageIcon = getIconFileExtension(file.substring(indexFileExtension));
-      const { atime, size } = await getFileInformations(path.join(filesFolder, file));
+        const srcImageIcon = getIconFileExtension(file.substring(indexFileExtension));
+        const { updatedAtISOString, size } = await getFileInformations(path.join(filesFolder, file));
 
-      const fileRow = `
-          <tr data-index=${index}>
-            <td>
-              <div class="image">
-                <img src=${srcImageIcon} class="icon"/>
-              </div>
-            </td>
-            <td>${atime}</td>
-            <td>${size}</td>
-          </tr>
-    `;
-
-      return fileRow;
-    })
-    .join("");
-
-  console.log(tableRows);
+        return templateFileIntoHTML(file, index, srcImageIcon, updatedAtISOString, size);
+      })
+      .map((tableRow) => tableRow.then((item) => item)),
+  );
 
   const dataTable = `
           <table id="data-table">
@@ -55,11 +41,11 @@ async function copyFiles(file: string, destinationPath: string) {
               <tr>
                 <th>Arquivo</th>
                 <th>Data de modificação</th>
-                <th>Tamanho</th>
+                <th>Tamanho (em bytes)</th>
               </tr>
             </thead>
             <tbody>
-              ${tableRows}
+              ${tableRows.join("")}
             </tbody>            
           </table>
   `;
@@ -101,7 +87,30 @@ function getIconFileExtension(extension: string): string {
   return IconFileExtension[extension.toLowerCase()] ?? "File uknown";
 }
 
-async function getFileInformations(sourcePath: string): Promise<{ atime: Date; size: number }> {
+async function getFileInformations(sourcePath: string): Promise<{ updatedAtISOString: string; size: number }> {
   const { atime, size } = await fs.stat(sourcePath);
-  return { atime, size };
+  const updatedAtISOString = atime.toISOString();
+
+  return { updatedAtISOString, size };
+}
+
+function templateFileIntoHTML(
+  fileName: string,
+  index: number,
+  srcImageIcon: string,
+  atime: string,
+  size: number,
+): string {
+  return `
+            <tr data-index=${index}>
+              <td>
+                <div class="image">
+                  <img src=${srcImageIcon} class="icon"/>
+                  <i>${fileName}</i>
+                </div>
+              </td>
+              <td>${atime}</td>
+              <td>${size}</td>
+            </tr>
+`;
 }
