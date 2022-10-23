@@ -79,18 +79,18 @@ async function copyFiles(file: string, destinationPath: string) {
 
 function getIconFileExtension(extension: string): string {
   const IconFileExtension = {
-    ".pdf": "/assets/file-pdf.svg",
-    ".doc": "/assets/file-doc.svg",
-    ".docx": "/assets/file-doc.svg",
-    ".csv": "/assets/file-csv.svg",
-    ".xls": "/assets/file-xls.svg",
-    ".xlsx": "/assets/file-xls.svg",
-    ".jpg": "/assets/file-image.svg",
-    ".jpeg": "/assets/file-image.svg",
+    ".pdf": "./assets/file-pdf.svg",
+    ".doc": "./assets/file-doc.svg",
+    ".docx": "./assets/file-doc.svg",
+    ".csv": "./assets/file-csv.svg",
+    ".xls": "./assets/file-xls.svg",
+    ".xlsx": "./assets/file-xls.svg",
+    ".jpg": "./assets/file-image.svg",
+    ".jpeg": "./assets/file-image.svg",
     ".png": "/assets/file-image.svg",
-    ".txt": "/assets/file-text.svg",
-    ".wav": "/assets/file-audio.svg",
-    ".mp3": "/assets/file-audio.svg",
+    ".txt": "./assets/file-text.svg",
+    ".wav": "./assets/file-audio.svg",
+    ".mp3": "./assets/file-audio.svg",
   };
 
   return IconFileExtension[extension.toLowerCase()] ?? "File uknown";
