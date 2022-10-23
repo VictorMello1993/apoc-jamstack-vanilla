@@ -24,37 +24,44 @@ async function copyFiles(file: string, destinationPath: string) {
 
   await Promise.all(files.map((file) => copyFiles(file, path.join("public", "files", `${file}`))));
 
-  const tableRows = files.map(async (file, index) => {
-    // const srcImageIcon = getIconFileExtension(file);
-    // console.log(srcImageIcon);
-    // const { atime, size } = await getFileInformations(file);
-    // const fileRow = `
-    //   <tr data-index=${index}>
-    //     <td>
-    //       <div class="image">
-    //         <img src=${srcImageIcon} class="icon"/>
-    //       </div>
-    //     </td>
-    //     <td>${atime}</td>
-    //     <td>${size}</td>
-    //   </tr>
-    // `;
-    // return fileRow;
-  });
+  const tableRows = files
+    .map(async (file, index) => {
+      const indexFileExtension = file.indexOf(".", -1);
+
+      const srcImageIcon = getIconFileExtension(file.substring(indexFileExtension));
+      const { atime, size } = await getFileInformations(path.join(filesFolder, file));
+
+      const fileRow = `
+          <tr data-index=${index}>
+            <td>
+              <div class="image">
+                <img src=${srcImageIcon} class="icon"/>
+              </div>
+            </td>
+            <td>${atime}</td>
+            <td>${size}</td>
+          </tr>
+    `;
+
+      return fileRow;
+    })
+    .join("");
+
+  console.log(tableRows);
 
   const dataTable = `
-      <table id="data-table">
-        <thead>
-        <tr>
-          <th>Arquivo</th>
-          <th>Data de modificação</th>
-          <th>Tamanho</th>
-        </tr>
-        <tbody>
-          ${tableRows}
-        </tbody>
-        </thead>
-      </table>
+          <table id="data-table">
+            <thead>
+              <tr>
+                <th>Arquivo</th>
+                <th>Data de modificação</th>
+                <th>Tamanho</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>            
+          </table>
   `;
 
   const containerFileList = `
@@ -75,13 +82,26 @@ async function copyFiles(file: string, destinationPath: string) {
   console.log("Success!");
 })();
 
-// function getIconFileExtension(extension: string): string {
-//   const IconFileExtension = {
+function getIconFileExtension(extension: string): string {
+  const IconFileExtension = {
+    ".pdf": "/assets/file-pdf.svg",
+    ".doc": "/assets/file-doc.svg",
+    ".docx": "/assets/file-doc.svg",
+    ".csv": "/assets/file-csv.svg",
+    ".xls": "/assets/file-xls.svg",
+    ".xlsx": "/assets/file-xls.svg",
+    ".jpg": "/assets/file-image.svg",
+    ".jpeg": "/assets/file-image.svg",
+    ".png": "/assets/file-image.svg",
+    ".txt": "/assets/file-text.svg",
+    ".wav": "/assets/file-audio.svg",
+    ".mp3": "/assets/file-audio.svg",
+  };
 
-//   };
-// }
+  return IconFileExtension[extension.toLowerCase()] ?? "File uknown";
+}
 
-// async function getFileInformations(sourcePath: string): Promise<any> {
-//   const { atime, size } = await fs.stat(sourcePath);
-//   return { atime, size };
-// }
+async function getFileInformations(sourcePath: string): Promise<{ atime: Date; size: number }> {
+  const { atime, size } = await fs.stat(sourcePath);
+  return { atime, size };
+}
