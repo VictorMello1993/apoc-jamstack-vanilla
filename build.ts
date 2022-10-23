@@ -4,9 +4,14 @@ import fs from "fs/promises";
 import path from "path";
 
 const filesFolder = "./files";
+const assetsFolder = "./assets";
 
 async function copyFiles(file: string, destinationPath: string) {
-  const sourcePath = path.join(filesFolder, file);
+  let sourcePath = "";
+
+  if (!file.includes(".svg")) sourcePath = path.join(filesFolder, file);
+  else sourcePath = path.join(assetsFolder, file);
+
   await fs.copyFile(sourcePath, destinationPath);
 }
 
@@ -17,8 +22,12 @@ async function copyFiles(file: string, destinationPath: string) {
   shell.rm("-rf", "public");
   shell.mkdir("public");
   shell.mkdir(path.join("public", "files"));
+  shell.mkdir(path.join("public", "assets"));
 
   const files = await fs.readdir(filesFolder);
+  const icons = await fs.readdir(assetsFolder);
+
+  icons.map((icon) => copyFiles(icon, path.join("public", "assets", `${icon}`)));
 
   const tableRows = await Promise.all(
     files
@@ -70,7 +79,7 @@ async function copyFiles(file: string, destinationPath: string) {
 
 function getIconFileExtension(extension: string): string {
   const IconFileExtension = {
-    ".pdf": "/assets/file-pdf.svg",
+    ".pdf": "./assets/file-pdf.svg",
     ".doc": "/assets/file-doc.svg",
     ".docx": "/assets/file-doc.svg",
     ".csv": "/assets/file-csv.svg",
