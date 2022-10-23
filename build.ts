@@ -5,12 +5,14 @@ import path from "path";
 
 const filesFolder = "./files";
 const assetsFolder = "./assets";
+const cssFiles = "./styles";
 
 async function copyFiles(file: string, destinationPath: string) {
   let sourcePath = "";
 
-  if (!file.includes(".svg")) sourcePath = path.join(filesFolder, file);
-  else sourcePath = path.join(assetsFolder, file);
+  if (file.includes(".svg")) sourcePath = path.join(assetsFolder, file);
+  else if (file.includes(".css")) sourcePath = path.join(cssFiles, file);
+  else sourcePath = path.join(filesFolder, file);
 
   await fs.copyFile(sourcePath, destinationPath);
 }
@@ -23,11 +25,14 @@ async function copyFiles(file: string, destinationPath: string) {
   shell.mkdir("public");
   shell.mkdir(path.join("public", "files"));
   shell.mkdir(path.join("public", "assets"));
+  shell.mkdir(path.join("public", "styles"));
 
   const files = await fs.readdir(filesFolder);
   const icons = await fs.readdir(assetsFolder);
+  const styles = await fs.readdir(cssFiles);
 
   icons.map((icon) => copyFiles(icon, path.join("public", "assets", `${icon}`)));
+  styles.map((style) => copyFiles(style, path.join("public", "styles", `${style}`)));
 
   const tableRows = await Promise.all(
     files
