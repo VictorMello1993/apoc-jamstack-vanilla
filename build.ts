@@ -2,6 +2,8 @@ import shell from "shelljs";
 import appConfig from "./app.json";
 import fs from "fs/promises";
 import path from "path";
+// import { createWriteStream } from "fs";
+// import { https } from "follow-redirects";
 
 const filesFolder = "./files";
 const assetsFolder = "./assets";
@@ -33,6 +35,7 @@ async function copyFiles(file: string, destinationPath: string) {
     files
       .map(async (file, index) => {
         copyFiles(file, path.join("public", "files", `${file}`));
+        // processFile(file);
 
         const indexFileExtension = file.indexOf(".", -1);
 
@@ -103,6 +106,21 @@ async function getFileInformations(sourcePath: string): Promise<{ updatedAtISOSt
   return { updatedAtISOString, size };
 }
 
+// async function processFile(file: string): Promise<void> {
+//   const fileStream = createWriteStream(file);
+//   console.log(fileStream);
+//   // const path = `./files${file}`;
+
+//   // https.get(path, (response) => {
+//   //   response.pipe(fileStream);
+
+//   //   fileStream.on("finish", () => {
+//   //     fileStream.close();
+//   //     console.log("Download completed");
+//   //   });
+//   // });
+// }
+
 function templateFileIntoHTML(
   fileName: string,
   index: number,
@@ -115,7 +133,7 @@ function templateFileIntoHTML(
               <td>
                 <div class="image">
                   <img src=${srcImageIcon} class="icon"/>
-                  <i>${fileName}</i>
+                  <a href="./files/${fileName}">${fileName}</a>
                 </div>
               </td>
               <td>${atime}</td>
