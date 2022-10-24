@@ -13,7 +13,6 @@ async function copyFiles(file: string, sourcePath: string, destinationPath: stri
   await fs.copyFile(sourcePath, destinationPath);
 }
 
-// Montando HTML no processo de build
 (async function build() {
   console.log("Starting build process...");
 
@@ -66,13 +65,11 @@ async function copyFiles(file: string, sourcePath: string, destinationPath: stri
       </section>
   `;
 
-  // Interpolando o conteúdo HTML
   const htmlFile = (await fs.readFile("index.html"))
     .toString()
     .replace("$TITLE", appConfig.title)
     .replace("$CONTENT", containerFileList);
 
-  // Salvando o HTML na pasta public
   await fs.writeFile("public/index.html", htmlFile);
 
   console.log("Success!");
