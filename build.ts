@@ -2,15 +2,11 @@ import shell from "shelljs";
 import appConfig from "./app.json";
 import fs from "fs/promises";
 import path from "path";
-// import { createWriteStream } from "fs";
-// import { https } from "follow-redirects";
 
 const filesFolder = "./files";
 const assetsFolder = "./assets";
 
-async function copyFiles(file: string, destinationPath: string) {
-  let sourcePath = "";
-
+async function copyFiles(file: string, sourcePath: string, destinationPath: string) {
   if (file.includes(".svg")) sourcePath = path.join(assetsFolder, file);
   else sourcePath = path.join(filesFolder, file);
 
@@ -29,18 +25,20 @@ async function copyFiles(file: string, destinationPath: string) {
   const files = await fs.readdir(filesFolder);
   const icons = await fs.readdir(assetsFolder);
 
-  icons.map((icon) => copyFiles(icon, path.join("public", "assets", `${icon}`)));
+  icons.map((icon) => copyFiles(icon, path.join(assetsFolder, icon), path.join("public", "assets", `${icon}`)));
 
   const tableRows = await Promise.all(
     files
       .map(async (file, index) => {
-        copyFiles(file, path.join("public", "files", `${file}`));
-        // processFile(file);
-
         const indexFileExtension = file.indexOf(".", -1);
+        const fileExtension = file.substring(indexFileExtension);
+        const sourcePath = path.join(filesFolder, file);
+        const destinationPath = path.join("public", "files", `${index}${fileExtension}`);
 
-        const srcImageIcon = getIconFileExtension(file.substring(indexFileExtension));
-        const { updatedAtISOString, size } = await getFileInformations(path.join(filesFolder, file));
+        copyFiles(file, sourcePath, destinationPath);
+
+        const srcImageIcon = getIconFileExtension(fileExtension);
+        const { updatedAtISOString, size } = await getFileInformations(sourcePath);
 
         return templateFileIntoHTML(file, index, srcImageIcon, updatedAtISOString, size);
       })
@@ -106,21 +104,6 @@ async function getFileInformations(sourcePath: string): Promise<{ updatedAtISOSt
   return { updatedAtISOString, size };
 }
 
-// async function processFile(file: string): Promise<void> {
-//   const fileStream = createWriteStream(file);
-//   console.log(fileStream);
-//   // const path = `./files${file}`;
-
-//   // https.get(path, (response) => {
-//   //   response.pipe(fileStream);
-
-//   //   fileStream.on("finish", () => {
-//   //     fileStream.close();
-//   //     console.log("Download completed");
-//   //   });
-//   // });
-// }
-
 function templateFileIntoHTML(
   fileName: string,
   index: number,
@@ -128,12 +111,14 @@ function templateFileIntoHTML(
   atime: string,
   size: number,
 ): string {
+  const fileExtension = fileName.substring(fileName.indexOf(".", -1));
+
   return `
             <tr data-index=${index}>
               <td>
                 <div class="image">
                   <img src=${srcImageIcon} class="icon"/>
-                  <a href="./files/${fileName}">${fileName}</a>
+                  <a href="./files/${index}${fileExtension}">${fileName}</a>
                 </div>
               </td>
               <td>${atime}</td>
