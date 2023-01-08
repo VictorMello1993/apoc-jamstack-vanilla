@@ -6,6 +6,14 @@ import path from "path";
 const filesFolder = "./files";
 const assetsFolder = "./assets";
 
+type FileInfo = {
+  fileName: string;
+  index: number;
+  srcImageIcon: string;
+  atime: string;
+  size: number;
+};
+
 async function copyFiles(file: string, sourcePath: string, destinationPath: string) {
   if (file.includes(".svg")) sourcePath = path.join(assetsFolder, file);
   else sourcePath = path.join(filesFolder, file);
@@ -24,7 +32,11 @@ async function copyFiles(file: string, sourcePath: string, destinationPath: stri
   const files = await fs.readdir(filesFolder);
   const icons = await fs.readdir(assetsFolder);
 
-  icons.map((icon) => copyFiles(icon, path.join(assetsFolder, icon), path.join("public", "assets", `${icon}`)));
+  const iconsPromises = icons.map((icon) =>
+    copyFiles(icon, path.join(assetsFolder, icon), path.join("public", "assets", `${icon}`)),
+  );
+
+  await Promise.all(iconsPromises);
 
   const tableRows = await Promise.all(
     files
@@ -34,12 +46,20 @@ async function copyFiles(file: string, sourcePath: string, destinationPath: stri
         const sourcePath = path.join(filesFolder, file);
         const destinationPath = path.join("public", "files", `${index}${fileExtension}`);
 
-        copyFiles(file, sourcePath, destinationPath);
+        await copyFiles(file, sourcePath, destinationPath);
 
         const srcImageIcon = getIconFileExtension(fileExtension);
         const { updatedAtISOString, size } = await getFileInformations(sourcePath);
 
-        return templateFileIntoHTML(file, index, srcImageIcon, updatedAtISOString, size);
+        const singleFile = {
+          fileName: file,
+          index,
+          srcImageIcon,
+          atime: updatedAtISOString,
+          size,
+        } as FileInfo;
+
+        return templateFileIntoHTML(singleFile);
       })
       .map((tableRow) => tableRow.then((item) => item)),
   );
@@ -101,13 +121,7 @@ async function getFileInformations(sourcePath: string): Promise<{ updatedAtISOSt
   return { updatedAtISOString, size };
 }
 
-function templateFileIntoHTML(
-  fileName: string,
-  index: number,
-  srcImageIcon: string,
-  atime: string,
-  size: number,
-): string {
+function templateFileIntoHTML({ fileName, index, srcImageIcon, atime, size }: FileInfo): string {
   const fileExtension = fileName.substring(fileName.indexOf(".", -1));
 
   return `
